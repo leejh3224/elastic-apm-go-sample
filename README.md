@@ -9,3 +9,11 @@ This example includes working code example of
  - logging integration
 
 reference: https://www.elastic.co/blog/how-to-instrument-your-go-app-with-the-elastic-apm-go-agent
+
+## Getting Started
+
+```bash
+$ docker compose up
+```
+
+Check localhost:5601 for kibana and localhost:8080/hello/world for web application.
