@@ -1,0 +1,29 @@
+metricbeat.modules:
+  - module: system
+    metricsets:
+      - cpu             # CPU usage
+      - load            # CPU load averages
+      - memory          # Memory usage
+      - network         # Network IO
+      - process         # Per process metrics
+      - process_summary # Process summary
+      - uptime          # System Uptime
+      - socket_summary  # Socket summary
+      - core           # Per CPU core usage
+      - diskio         # Disk IO
+      - filesystem     # File system usage for each mountpoint
+      - fsstat         # File system summary metrics
+      - socket         # Sockets and connection info (linux only)
+    enabled: true
+    period: 3s
+    processes: ['.*']
+
+  - module : golang
+    metricsets: ["heap"]
+    enabled: true
+    period: 3s
+    hosts: ["web:8080"]
+    heap.path: "/debug/vars"
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]

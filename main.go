@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"expvar"
 	"fmt"
 	"net/http"
 
@@ -60,6 +61,29 @@ func updateRequestCount(ctx context.Context, name string, log *logrus.Entry) (in
 	return count, tx.Commit()
 }
 
+func metricsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+
+	first := true
+	report := func(key string, value interface{}) {
+		if !first {
+			fmt.Fprintf(w, ",\n")
+		}
+		first = false
+		if str, ok := value.(string); ok {
+			fmt.Fprintf(w, "%q: %q", key, str)
+		} else {
+			fmt.Fprintf(w, "%q: %v", key, value)
+		}
+	}
+
+	fmt.Fprintf(w, "{\n")
+	expvar.Do(func(kv expvar.KeyValue) {
+		report(kv.Key, kv.Value)
+	})
+	fmt.Fprintf(w, "\n}\n")
+}
+
 func main() {
 	var err error
 
@@ -75,5 +99,6 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/hello/{name}", helloHandler)
+	r.HandleFunc("/debug/vars", metricsHandler)
 	log.Fatal(http.ListenAndServe(":8080", apmhttp.Wrap(r)))
 }
